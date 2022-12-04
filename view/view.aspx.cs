@@ -12,18 +12,40 @@ namespace view
     {
         DataTable dt = new DataTable();
         Command cmnds = new Command();
+        bool TextChanged = false;
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            if(!this.IsPostBack)
+            {
+                this.DataBind();
+            }
         }
 
         protected void result_Click(object sender, EventArgs e)
         {
-            dt= cmnds.slctName(Txt_input.Text);
-            GridShow.DataSource = dt;
-            GridShow.DataBind();
+            if(TextChanged)
+            {
+                Session["data"] = null;
+            }
+            this.BindGrid();
+            TextChanged = false;
 
-            if(GridShow.Rows.Count <= 0)
+        }
+
+        
+
+        private void BindGrid()
+        {
+            if (Session["data"] == null)
+            {
+                dt = cmnds.slctName(Txt_input.Text);
+                Session["data"] = dt;
+            }
+                GridShow.DataSource = Session["data"];
+                GridShow.DataBind();
+            
+
+            if (GridShow.Rows.Count <= 0)
             {
                 result_label.Text = "Not found matching";
             }
@@ -33,6 +55,15 @@ namespace view
             }
         }
 
-       
+        protected void GridShow_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            GridShow.PageIndex = e.NewPageIndex;
+            this.BindGrid();
+        }
+
+        protected void Txt_input_TextChanged(object sender, EventArgs e)
+        {
+            TextChanged = true;
+        }
     }
 }
